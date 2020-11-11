@@ -13,10 +13,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
     print('Starting training epoch {}'.format(epoch))
     model.train()
 
-    # Prepare value counters and timers
+    # count loss
     losses = AverageMeter()
 
-    end = time.time()
     for i, (input_gray, input_ab) in enumerate(train_loader):
         # Use GPU if available
         input_gray, input_ab = input_gray.to(device), input_ab.to(device)
@@ -37,9 +36,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         optimizer.step()
 
         # Print model accuracy -- in the code below, val refers to value, not validation
-        if i % 10 == 0:
+        if i % 2 == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
+                  'Loss {loss.val:.8f} ({loss.avg:.8f})\t'.format(
                 epoch, i, len(train_loader), loss=losses))
 
     print('Finished training epoch {}'.format(epoch))
@@ -48,12 +47,15 @@ def train(train_loader, model, criterion, optimizer, epoch):
 if __name__ == '__main__':
     torch.set_default_tensor_type(torch.FloatTensor)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    batch_size = 32
+
     loadSize = 256
     fineSize = 128
-    batch_size = 64
 
     # Training
     transform_trn = transforms.Compose([
+        # random scaling between [0.6,1.0]
+        transforms.RandomAffine(0,None,scale=(0.6,1.0)),
         transforms.RandomChoice([
             transforms.Resize((loadSize, loadSize), interpolation=1),
             transforms.Resize((loadSize, loadSize), interpolation=2),
@@ -67,11 +69,6 @@ if __name__ == '__main__':
     dataset_trn = FaceDataset('./data/train', transform_trn)
     train_loader = torch.utils.data.DataLoader(dataset_trn, batch_size=batch_size, shuffle=True)
 
-    # Validation
-    val_transforms = transforms.Compose([transforms.Resize(128), transforms.CenterCrop(128)])
-    dataset_val = FaceDataset('./data/valid', val_transforms)
-    val_loader = torch.utils.data.DataLoader(dataset_val, batch_size=16, shuffle=False)
-
     dataset_size = len(dataset_trn)
     print('#training images = %d' % dataset_size)
 
@@ -79,18 +76,7 @@ if __name__ == '__main__':
     criterion = nn.MSELoss().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, weight_decay=0.0)
 
-    # Make folders and set parameters
-    os.makedirs('outputs/color', exist_ok=True)
-    os.makedirs('outputs/gray', exist_ok=True)
-    os.makedirs('checkpoints', exist_ok=True)
-
-    save_images = True
-    best_losses = 1e10
-    epochs = 1000
-    save_epoch = 50
-    val_epoch = 30
-    cnt_save = 0
-    cnt_val = 0
+    epochs = 5
     # Train model
     for epoch in range(epochs):
         # Train for one epoch, then validate

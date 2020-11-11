@@ -20,7 +20,7 @@ class DeepColorNet(BaseColor):
             # 128 -> 64
             nn.Conv2d(1, 16, kernel_size=k_size, stride=stride, padding=padding, bias=True),
             nn.ReLU(True),
-            norm_layer(16),
+            norm_layer(16), # batch normalization
 
             # 64 -> 32
             nn.Conv2d(16, 32, kernel_size=k_size, stride=stride, padding=padding, bias=True),

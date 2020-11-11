@@ -39,10 +39,10 @@ def validate(val_loader, model, criterion, save_images, epoch):
         end = time.time()
 
         # Print model loss
-        if i % 25 == 0:
+        if i % 2 == 0:
             print('Validate: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
+                  'Loss {loss.val:.8f} ({loss.avg:.8f})\t'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses))
 
     # print('Finished validation.')
@@ -81,11 +81,11 @@ def train(train_loader, model, criterion, optimizer, epoch):
         end = time.time()
 
         # Print model accuracy -- in the code below, val refers to value, not validation
-        if i % 10 == 0:
+        if i % 2 == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
+                  'Loss {loss.val:.8f} ({loss.avg:.8f})\t'.format(
                 epoch, i, len(train_loader), batch_time=batch_time,
                 data_time=data_time, loss=losses))
 
@@ -102,17 +102,17 @@ if __name__ == '__main__':
     loadSize = 256
     fineSize = 128
     # long time train
-    batch_size = 64
-    save_images = True
-    epochs = 1000
-    save_epoch = 100
-    val_epoch = 10
-    # short time test
-    # batch_size = 128
+    # batch_size = 64
     # save_images = True
-    # epochs = 50
-    # save_epoch = 10
+    # epochs = 1000
+    # save_epoch = 100
     # val_epoch = 10
+    # short time test
+    batch_size = 16
+    save_images = True
+    epochs = 50
+    save_epoch = 3
+    val_epoch = 3
 
     # Training
     transform_trn = transforms.Compose([
@@ -157,4 +157,4 @@ if __name__ == '__main__':
                 losses = validate(loader_val, model, criterion, save_images, epoch)
         if cnt_save >= save_epoch:
             cnt_save = 0
-            torch.save(model.state_dict(), 'checkpoints/model-epoch-{}-losses-{:.3f}.pth'.format(epoch + 1, losses))
+            torch.save(model.state_dict(), 'checkpoints/model-epoch-{}-losses-{:.8f}.pth'.format(epoch + 1, losses))
